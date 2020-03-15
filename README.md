@@ -1,8 +1,8 @@
 # NumPyPCA
 
-[![Build Status]
+PCA implementation using NumPy
+
+[![Build Status] 
 (https://travis-ci.com/exchhattu/NumPyPCA.svg?branch=master)]
 (https://travis-ci.com/exchhattu/NumPyPCA)
 
-
-PCA implementation using NumPy
