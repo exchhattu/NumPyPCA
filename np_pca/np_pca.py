@@ -22,8 +22,8 @@ class npPCA:
 
     def load_data(
         self,
-        path_to_data,
-        target_column_idx,
+        path_to_data="",
+        target_column_idx=-1,
         title_exist=None,
         dtypes={},
         use_data=True,
@@ -86,39 +86,39 @@ class npPCA:
         self._e_pairs.sort(key=lambda x: x[0], reverse=True)
 
     def largest_eigenvalues(self, k=5):
-
-        """
-        After sorting based on eigenvalue (variance), return
+        """ After sorting based on eigenvalue (variance), return
         top five eigenvalue and its corresponding eigenvectors.
+        
+        Args:
+            k (int, optional): top k to select eigenvalues and eigenvectors. Defaults to 5.
+        
+        Returns:
+            int: top k eigen vectors and values  
         """
+
         if len(self._e_pairs) < k:
             return self._e_pairs
         else:
             return self._e_pairs[:k]
 
-    def explained_variance(self):
-        """Computed explained variance"""
+    def explained_variance(self, k=5):
+        """Compute explained variance
+
+        Args:
+            k (int, optional): top k. Defaults to 5.
+        
+        Returns:
+            float: cumulative variance captured by each principal component
+        """
         total_variance = sum([self._e_pairs[i][0] for i in range(len(self._e_pairs))])
         variance = [
             self._e_pairs[i][0] / total_variance for i in range(len(self._e_pairs))
         ]
-        return np.cumsum(variance)
-
-    def SVD_matrix_decomp(self):
-        # standarized
-        X_norm = (X - np.mean(self.X, axis=1)) / np.std(self.X, axis=1)
-        X_mean = np.mean(X_norm, axis=0)  # featurewise mean
-
-        # SVD
-        # X_cov = (X_norm - X_mean).T.dot(X_norm - X_mean)/(X_norm.shape[0] -1)
-        U, S, V = np.linalg.svd(X_norm.T)
-        # where U and V are unity matrix, dot product of the inverse
-        # gives identify matrix
+        return np.cumsum(variance[:k])
 
 
-class NumPyInterface(object):
-    def __init__(self):
-        print("init")
-
-    def test(self):
-        return "test"
+if __name__ == "__main__":
+    pca = npPCA()
+    pca.load_data()
+    pca.fit()
+    explained_variances = pca.explained_variance()
