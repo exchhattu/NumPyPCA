@@ -26,7 +26,7 @@ class npPCA:
         target_column_idx=-1,
         title_exist=None,
         dtypes={},
-        use_data=True,
+        use_iris_data=True,
     ):
         """ Load a data from given path 
         
@@ -39,7 +39,7 @@ class npPCA:
         """
         # title_exists: None, if the data does not have column title,
 
-        if use_data:
+        if use_iris_data:
             dtypes = {
                 "sepallength": np.float64,
                 "sepalwidth": np.float64,
@@ -50,9 +50,12 @@ class npPCA:
             path_to_file = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
 
         df_data = pd.read_csv(path_to_file, dtype=dtypes)
+        print(df_data)
 
         # find the column indexes of dependent variables
-        columns_idxes = list(set(df_data.columns) - set(target_column_idx))
+        columns_idxes = [
+            i for i in range(len(df_data.columns)) if i != target_column_idx
+        ]
 
         # Dependent variables are set X and target variable is y
         self.X = df_data.iloc[:, columns_idxes].values
@@ -119,6 +122,6 @@ class npPCA:
 
 if __name__ == "__main__":
     pca = npPCA()
-    pca.load_data()
+    pca.load_data(target_column_idx=4)
     pca.fit()
     explained_variances = pca.explained_variance()
