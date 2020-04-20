@@ -50,7 +50,6 @@ class npPCA:
             path_to_file = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
 
         df_data = pd.read_csv(path_to_file, dtype=dtypes)
-        print(df_data)
 
         # find the column indexes of dependent variables
         columns_idxes = [
@@ -117,6 +116,8 @@ class npPCA:
         variance = [
             self._e_pairs[i][0] / total_variance for i in range(len(self._e_pairs))
         ]
+        if k > len(variance):
+            k = len(variance) - 1
         return np.cumsum(variance[:k])
 
 
