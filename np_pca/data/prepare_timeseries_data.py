@@ -5,6 +5,9 @@ By: Rojan Shrestha PhD
 from __future__ import print_function
 import argparse
 import sys
+import csv
+
+from collections import OrderedDict 
 
 import MDAnalysis as mda
 from MDAnalysis.analysis import align
@@ -29,7 +32,7 @@ def parse_trajectories(path_to_ref, path_to_mobile, path_to_setup, output_file="
     u_mob_CAs = u_mob.select_atoms("name CA")
 
     # X,Y,Z will be
-    results = {}
+    results = OrderedDict()  
     ref_CA_trans = u_ref_CA.positions - u_ref_CA.center_of_mass()
 
     u_mob.trajectory[0]   # rewind trajectory
@@ -43,9 +46,18 @@ def parse_trajectories(path_to_ref, path_to_mobile, path_to_setup, output_file="
 
         # n*3 matrix where n is # of atoms
         positions = u_mob_CAs.positions
-	print(positions.shape, ref_CA_trans.shape)
+	print(type(positions))
+	for i in range(positions.shape[0]):
+           results.update(i, positions) 
+    print(results)
 
-        # mobile.atoms.write("mobile_on_ref.pdb")
+def write_file(results):
+    results = {'first_name': ['Baked', 'Roj'], 'last_name': ['Beans', 'shrestha']}
+    with open('test.csv', 'wb') as f:
+       for key, value in results.items():
+	   merge_value = ",".join(value)
+           f.write("%s,%s\n" %(key,merge_value))
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(prog='./prepare_timeseries_data.py', description='time series data')
@@ -56,4 +68,6 @@ if __name__ == "__main__":
   parser.add_argument('-o','--outfile', required=False, default="data.xyz", help='XYZ coordinates')
   
   args = parser.parse_args(sys.argv[1:])
-  parse_trajectories(args.ref, args.mob, args.sfile, output_file=args.outfile)
+  # a = parse_trajectories(args.ref, args.mob, args.sfile, output_file=args.outfile)
+  a = {}
+  write_file(a)
