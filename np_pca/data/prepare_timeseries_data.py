@@ -9,6 +9,10 @@ import csv
 import sys
 from collections import OrderedDict
 
+# This libraries was tested on python2.7
+# pip install MDAnalysis
+# if it is already installed, use following command
+# pip install --upgrade MDAnalysis
 import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
@@ -103,4 +107,3 @@ if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
     result = parse_trajectories(args.ref, args.mob, args.sfile)
     write_file(result, exp_type=args.exp_type, out_file=args.outfile)
-
