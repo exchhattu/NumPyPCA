@@ -31,7 +31,6 @@ def test_scikitlearn():
 
     # Dependent variables are set to X and target variable is ignored 
     X = df_data.iloc[:, columns_idxes].values
-    print("Unlucky ", X.shape)
     pca = PCA()
     pca.fit(X)
     X_trans_scikit  = pca.transform(X)
@@ -52,6 +51,19 @@ def test_scikitlearn():
     # eigen vector of np implementation should be transposed 
     npt.assert_almost_equal(variance_scikit, oj_np_pca._ei_vals)
     npt.assert_almost_equal(np.abs(comp_scikit), np.abs(oj_np_pca._ei_vecs.T))
+
+    # use SVD instead of eigen value and eigen vectors
+    oj_np_pca_svd = np_pca.npPCA() 
+    oj_np_pca_svd.load_data(target_column_idx=4)
+    X_trans_np_svd = oj_np_pca_svd.fit(method="svd")
+    # compare two transformed matrixes 
+    npt.assert_array_equal(X_trans_np_svd.shape, X_trans_scikit.shape)
+    npt.assert_almost_equal(np.abs(X_trans_np_svd), np.abs(X_trans_scikit), decimal=4)
+
+    # compare eigen values and their corresponding vectors
+    # eigen vector of np implementation should be transposed 
+    npt.assert_almost_equal(variance_scikit, oj_np_pca_svd._ei_vals)
+    # npt.assert_almost_equal(np.abs(comp_scikit), np.abs(oj_np_pca_svd._ei_vecs.T))
 
 
 if __name__ == '__main__':
