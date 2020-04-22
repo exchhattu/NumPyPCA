@@ -59,24 +59,59 @@ class npPCA:
         # Dependent variables are set X and target variable is y
         self.X = df_data.iloc[:, columns_idxes].values
         self.y = df_data.iloc[:, target_column_idx].values
-        print("# of features:%d " % self.X.shape[0])
+        print("# of features:%d " % self.X.shape[1])
+        print("# of records:%d " % self.X.shape[0])
 
-    def fit(self):
+    def use_cov(self):
+        """ compute PCA using covariance matrix
+
+        Returns:
+            [floats float]: list or numpy array list/numpy 
+        """
+
+        # standarized
+        X_norm = self.X - np.mean(self.X.T, axis=1)  # / np.std(self.X.T, axis=1)
+
+        # covariance matrix of transpose matrix to compute the relation
+        # between features using data
+        X_cov = np.cov(X_norm.T)
+
+        # eigendecomposition of d*d matrix where d represents # of features
+        ei_vals, ei_vecs = np.linalg.eig(X_cov)
+
+        # project original normalzied data into PC spaces
+        self.X_trans = np.dot(ei_vecs.T, X_norm.T).T
+        return ei_vals, ei_vecs
+
+    def use_svd(self):
+        """ Use SVD decomposition to get variance and principal component.
+
+        Returns:
+            [float, float]: pricipal component, variance 
+        """
+        X_norm = self.X - np.mean(self.X.T, axis=1)  # / np.std(self.X.T, axis=1)
+        u, sigma, V = np.linalg.svd(X_norm, full_matrices=False)
+        self.X_trans = np.dot(u, np.diag(sigma))
+        return np.square(sigma) / (u.shape[0] - 1), V
+
+    def fit(self, method="eig"):
         """ Eigenvectors and eigenvalues of a covariance matrix 
         are core of a PCA. The principal components (eigenvector)
         determine the direction of the new features, and eigenvalues
         holds the variance of the data along the new feature axes
         that determine their magnitude.
+
+        Args:
+            method (str, optional): Method choose to compute PCA. Defaults to "eig".
+
+        Returns:
+            [float]: projected matrix  
         """
 
-        # standarized
-        X_norm = (self.X - np.mean(self.X, axis=0)) / np.std(self.X, axis=0)
-
-        # covariance matrix
-        X_cov = np.cov(X_norm.T)
-
-        # eigendecomposition of d*d matrix where d represents # of features
-        self._ei_vals, self._ei_vecs = np.linalg.eig(X_cov)
+        if method == "eig":
+            self._ei_vals, self._ei_vecs = self.use_cov()
+        elif method == "svd":
+            self._ei_vals, self._ei_vecs = self.use_svd()
 
         # extract eigenvalue and eigenvector pair
         self._e_pairs = [
@@ -86,6 +121,7 @@ class npPCA:
 
         # select a top eigen vectors
         self._e_pairs.sort(key=lambda x: x[0], reverse=True)
+        return self.X_trans
 
     def largest_eigenvalues(self, k=5):
         """ After sorting based on eigenvalue (variance), return
@@ -125,4 +161,5 @@ if __name__ == "__main__":
     pca = npPCA()
     pca.load_data(target_column_idx=4)
     pca.fit()
-    explained_variances = pca.explained_variance()
+    pca.fit(method="svd")
+    # explained_variances = pca.explained_variance()
