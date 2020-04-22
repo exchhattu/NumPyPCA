@@ -14,7 +14,7 @@ from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 
 
-def parse_trajectories(path_to_ref, path_to_mobile, path_to_setup, output_file=""):
+def parse_trajectories(path_to_ref, path_to_mobile, path_to_setup):
     """[summary]
 
     Args:
@@ -32,7 +32,7 @@ def parse_trajectories(path_to_ref, path_to_mobile, path_to_setup, output_file="
     u_mob_CAs = u_mob.select_atoms("name CA")
 
     # X,Y,Z will be
-    results = OrderedDict()  
+    results = {}  
     ref_CA_trans = u_ref_CA.positions - u_ref_CA.center_of_mass()
 
     u_mob.trajectory[0]   # rewind trajectory
@@ -42,21 +42,24 @@ def parse_trajectories(path_to_ref, path_to_mobile, path_to_setup, output_file="
 	u_mob_CAs.atoms.translate(-u_mob_CAs.select_atoms('name CA').center_of_mass())
         u_mob_CAs.atoms.rotate(R)
         u_mob_CAs.atoms.translate(u_ref_CA.center_of_mass())
-	print("rmsd", rmsd)
 
-        # n*3 matrix where n is # of atoms
+        # n*3 matrix where n is # of atoms and each atom has X, Y, and Z
+        # However, coordinate is appended from the snapshot captured at each time interval
         positions = u_mob_CAs.positions
-	print(type(positions))
 	for i in range(positions.shape[0]):
-           results.update(i, positions) 
-    print(results)
+           results[i] = results.get(i, [])
+           results[i].append(positions[i,:].tolist())
+    return results
 
-def write_file(results):
-    results = {'first_name': ['Baked', 'Roj'], 'last_name': ['Beans', 'shrestha']}
-    with open('test.csv', 'wb') as f:
+def write_file(results, exp_type="W", out_file="result.csv"):
+    with open(out_file, 'w') as f:
        for key, value in results.items():
-	   merge_value = ",".join(value)
-           f.write("%s,%s\n" %(key,merge_value))
+	   merge_value = ",".join([str(inner) for outer in value for inner in outer])
+	   # columns - 
+	   # 1. type of experiment (M/W) 
+	   # 2. sn 
+           # 3-5. X,Y,Z and this is repeated for t times 
+           f.write("%s,%s,%s\n" %(exp_type, key,merge_value))
 
 
 if __name__ == "__main__":
@@ -66,8 +69,9 @@ if __name__ == "__main__":
   parser.add_argument('-m','--mob', required=True, help='path to mobile file')
   parser.add_argument('-s','--sfile', required=True, help='path to setup file')
   parser.add_argument('-o','--outfile', required=False, default="data.xyz", help='XYZ coordinates')
+  # two types of symbol would be used W and M. They represent wild type and mutant
+  parser.add_argument('-t','--exp_type', required=False, default="W", help='Type of biological experiment')
   
   args = parser.parse_args(sys.argv[1:])
-  # a = parse_trajectories(args.ref, args.mob, args.sfile, output_file=args.outfile)
-  a = {}
-  write_file(a)
+  result = parse_trajectories(args.ref, args.mob, args.sfile)
+  write_file(result, exp_type=args.exp_type, out_file=args.outfile)
