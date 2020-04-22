@@ -34,9 +34,9 @@ def test_scikitlearn():
     print("Unlucky ", X.shape)
     pca = PCA()
     pca.fit(X)
-    x_trans_scikit = pca.transform(X)
-    print(pca.explained_variance_)
-    y1 = pca.explained_variance_
+    X_trans_scikit  = pca.transform(X)
+    variance_scikit = pca.explained_variance_
+    comp_scikit     = pca.components_
 
     # this is a class to compute PCA using numpy libraries
     # and linear algebra 
@@ -44,17 +44,14 @@ def test_scikitlearn():
     oj_np_pca.load_data(target_column_idx=4)
     X_trans_np = oj_np_pca.fit()
 
-    # compare transformed matrix 
-    npt.assert_array_equal(X_trans_np.shape, x_trans_scikit.shape)
-    npt.assert_almost_equal(np.abs(X_trans_np), np.abs(x_trans_scikit), decimal=4)
+    # compare two transformed matrixes 
+    npt.assert_array_equal(X_trans_np.shape, X_trans_scikit.shape)
+    npt.assert_almost_equal(np.abs(X_trans_np), np.abs(X_trans_scikit), decimal=4)
 
-    # y = oj_np_pca.explained_variance(3)
-    # y3 = oj_np_pca.largest_eigenvalues(3)
-    # y2 = pca.explained_variance_ratio_
-    # print(y)
-    # print(y2)
-    # print(y3)
-    # npt.assert_array_equal(y1, y)
+    # compare eigen values and their corresponding vectors
+    # eigen vector of np implementation should be transposed 
+    npt.assert_almost_equal(variance_scikit, oj_np_pca._ei_vals)
+    npt.assert_almost_equal(np.abs(comp_scikit), np.abs(oj_np_pca._ei_vecs.T))
 
 
 if __name__ == '__main__':
